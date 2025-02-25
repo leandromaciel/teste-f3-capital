@@ -19,11 +19,11 @@ O **CNAB Reader** é uma ferramenta de linha de comando (CLI) desenvolvida em No
 
 ## Instalação
 
-Clone o repositório e navegue para o diretório do projeto:
+Clone o repositório e navegue para o diretório do projeto (SSH):
 
    ```bash
-   git clone <URL-do-repositório>
-   cd cnab-reader
+   git clone git@github.com:leandromaciel/teste-f3-capital.git
+   cd teste-f3-capital
    npm install
    ```
 
