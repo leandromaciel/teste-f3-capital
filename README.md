@@ -1,68 +1,106 @@
-# Desafio técnico: Leitor de Arquivos CNAB
+# CNAB Reader
 
-## Introdução
-Este desafio tem a proposta de melhorar uma CLI que lê arquivos CNAB.
-O arquivo CNAB (Comunicação Nacional de Boleto) não se refere a um formato específico de arquivo, mas sim a um padrão de comunicação utilizado no Brasil para troca de informações entre instituições financeiras e empresas. O CNAB é um acrônimo para "Centro Nacional de Automação Bancária", e o termo geralmente está associado aos arquivos de remessa e retorno utilizados em transações bancárias, especialmente relacionadas a boletos bancários.
+O **CNAB Reader** é uma ferramenta de linha de comando (CLI) desenvolvida em Node.js para leitura, filtragem e exportação de arquivos CNAB. Ela permite:
+- Filtrar linhas do arquivo CNAB por segmento.
+- Pesquisar por nome de empresa (usando o campo de empresa do arquivo).
+- Exportar os resultados para um arquivo JSON (apenas registros do segmento Q).
 
-Os arquivos CNAB são utilizados para transmitir informações sobre transações financeiras entre empresas e bancos de forma eletrônica. Eles seguem um padrão estabelecido pela Febraban (Federação Brasileira de Bancos), que define a estrutura e o layout dos arquivos para garantir a interoperabilidade entre diferentes sistemas bancários e empresas.
+> **Observação:**  
+> O arquivo CNAB padrão é lido da pasta `files/raw` e os arquivos exportados são salvos na pasta `files/processed`.
 
-Os arquivos CNAB podem ser de diversos tipos, dependendo da finalidade da transação, como CNAB 240 e CNAB 400, por exemplo. O CNAB 240 é mais comum para transações mais modernas, enquanto o CNAB 400 é um formato mais antigo.
+---
 
-## Exemplo
-Um arquivo CNAB é posicional, sendo que cabeçalho é composta pelas duas primeiras linhas do arquivo e o rodapé as duas ultimas.
+## Requisitos
 
-Ele é dividido por segmentos *P*, *Q* e *R*, cada linha começa com um codigo que tem no final o tipo de segmento:
+- Node.js (versão 22)
+- npm
 
-```
-0010001300002Q 012005437734000407NTT BRASIL COMERCIO E SERVICOS DE TECNOLAVENIDA DOUTOR CHUCRI ZAIDAN, 1240 ANDARVILA SAO FRANCI04711130SAO PAULO      SP0000000000000000                                        000
-```
-Neste exemplo o **Q** aparece na posição/coluna 14, cada posição representa algo dentro do arquivo cnab.
+---
 
-## Desafio
+## Instalação
 
-Este desafio visa avaliar suas habilidades de manipulação de arquivos, busca eficiente de dados e geração de saída estruturada em um formato JSON.
+Clone o repositório e navegue para o diretório do projeto:
 
-Ao executar o comando abaixo, a CLI apresentará um *helper* e instruções de como utilizá-la:
+   ```bash
+   git clone <URL-do-repositório>
+   cd cnab-reader
+   npm install
+   ```
 
+
+## Estrutura do projeto
 ```bash
-node cnabRows.js
-Uso: cnabRows.js [options]
-
-Opções:
-      --help      Exibe ajuda                                         [booleano]
-      --version   Exibe a versão                                      [booleano]
-  -f, --from      posição inicial de pesquisa da linha do Cnab
-                                                          [número] [obrigatório]
-  -t, --to        posição final de pesquisa da linha do Cnab
-                                                          [número] [obrigatório]
-  -s, --segmento  tipo de segmento                        [string] [obrigatório]
-
-Exemplos:
-  cnabRows.js -f 21 -t 34 -s p  lista a linha e campo que from e to do cnab
+cnab-reader/
+├── package.json             # Gerenciador de dependências e scripts
+├── jest.config.js           # Configuração do Jest para testes unitários
+├── babel.config.cjs         # Configuração do Babel para transformar ES Modules
+├── src/
+│   ├── index.js             # Ponto de entrada da CLI
+│   ├── cnabReader.js        # Orquestra o processamento do CNAB
+│   ├── cnabUtils.js         # Funções de processamento (filtragem, busca exportação, etc.)
+│   └── fileUtils.js         # Funções para leitura de arquivo
+├── tests/
+│   └── cnabUtils.test.js    # Testes unitários (usando Jest)
+└── files/
+    ├── raw/
+    │   └── cnabExample.rem  # Arquivo CNAB de exemplo
+    └── processed/           # Pasta onde os arquivos exportados serão salvos
 ```
 
-O desafio consiste em implementar as seguintes funcionalidades:
 
-**1. Leitura de Arquivo CNAB:**
-   - Permitir que o usuário forneça o caminho do arquivo CNAB pela linha de comando (CLI).
-   - O campo do arquivo é opcional; caso não seja especificado, o programa deve informar ao usuário que será utilizado um arquivo padrão.
+## Uso
 
-**2. Busca por Segmentos:**
-   - Implementar a capacidade de buscar por segmentos específicos no arquivo CNAB.
-   - Exibir o nome completo das empresas associadas ao segmento informado.
+Executando a CLI
+Para executar o CNAB Reader, utilize o seguinte comando:
+```bash
+node src/index.js [opções]
+```
 
-**3. Pesquisa por Nome da Empresa:**
-   - Desenvolver uma funcionalidade que permita a busca por nome de empresa no arquivo CNAB.
-   - Mostrar o nome completo da empresa, não apenas o fragmento usado na pesquisa.
-   - Indicar a posição exata onde a empresa foi encontrada e informar a qual segmento ela pertence.
+Opções Disponíveis
+-a, --arquivo
+Descrição: Caminho para o arquivo CNAB.
+Padrão: files/raw/cnabExample.rem (caso não seja informado).
 
-**4. Exportação para JSON:**
-   - Criar um novo arquivo em formato JSON contendo as informações essenciais:
-      - precisa ser uma nova opção no CLI
-      - Nome da empresa.
-      - Endereço completo (incluindo avenida, rua e CEP).
-      - Posições no arquivo CNAB onde as informações foram localizadas.
+-f, --from
+Descrição: Posição inicial para extração de um campo da linha do CNAB.
+Padrão: null (caso não seja informado, extrai a linha inteira).
 
-### Bônus
+-t, --to
+Descrição: Posição final para extração de um campo da linha do CNAB.
+Padrão: null.
 
-O candidato tem total liberdade de mudar a estrutura atual desse projeto, a ideía é ver a criatividade para resolver esse problema.
+-s, --segmento
+Descrição: Tipo de segmento a ser filtrado.
+Padrão: "" (se não informado, todas as linhas são consideradas).
+
+-e, --empresa
+Descrição: Pesquisa por nome da empresa (parcial ou completo). Quando informado, o script realiza a busca e exibe os resultados.
+
+-x, --export
+Descrição: Exporta os resultados para um arquivo JSON (apenas registros do segmento Q, pois os segmentos Q e R não possuem endereço).
+Padrão: false.
+
+## Exemplos de Uso
+1. Pesquisar por empresa e exportar os resultados para JSON:
+```bash
+node src/index.js -e TECNOL -x
+```
+
+2. Filtrar linhas por segmento e extrair um campo específico (utilizando -f e -t):
+```bash
+node src/index.js -s P -f 21 -t 34
+```
+
+3 . Utilizar um arquivo CNAB customizado:
+```bash
+node src/index.js -a /caminho/para/seu/arquivo.rem
+```
+
+## Execução dos Testes
+Os testes unitários foram desenvolvidos utilizando o Jest. Para executá-los, utilize:
+```bash
+npm test
+```
+
+Os testes estão localizados na pasta tests/ e cobrem as principais funções do módulo cnabUtils.js.
+
