@@ -31,6 +31,3 @@ Thumbs.db
 # Configurações de IDEs e editores
 .vscode/
 .idea/
-
-# Pasta de arquivos processados (gerados pelo script)
-files/processed/
